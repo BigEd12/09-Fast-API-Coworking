@@ -68,9 +68,15 @@ def get_bookings_by_client(client_id: int, session: Session = Depends(get_db_ses
     except Exception as e:
         return {'error': str(e)}
 
-# @app.get('/bookings/room/{room_id}')
-# def get_bookings_by_room():
-#     return pass
+@app.get('/bookings/room/{room_id}')
+def get_bookings_by_room(room_id: int, session: Session = Depends(get_db_session)):
+    try:
+        bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
+        booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
+    
+        return {f'bookings for room {room_id}': booking_list}
+    except Exception as e:
+        return {'error': str(e)}
 
 # #----- ROOM ENDPOINTS -----#
 
