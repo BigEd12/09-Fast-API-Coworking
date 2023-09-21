@@ -143,6 +143,22 @@ def add_new_room(
 
 # #----- CLIENT ENDPOINT -----#
 
-# @app.get('/clients/bookings')
-# def get_bookings_by_all_clients():
-#     return pass
+@app.get('/clients/bookings')
+def get_bookings_by_all_clients(session: Session = Depends(get_db_session)):
+    try:
+        client_ids = []
+        client_count = {}
+        bookings = session.query(Booking)
+        for booking in bookings:
+            client_ids.append(booking.id_client)
+            
+        for client_id in client_ids:
+            if client_id in client_count:
+                client_count[client_id] += 1
+            else:
+                client_count[client_id] = 1
+        return {'bookings per client': client_count}
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return {"error": "Internal Server Error"}
+    

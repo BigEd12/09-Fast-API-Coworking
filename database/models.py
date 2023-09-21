@@ -27,3 +27,4 @@ class Booking(Base):
     id_client = Column('id_client', Integer, ForeignKey('clients.client_id'))
     start = Column('start', String)
     end = Column('end', String)
+    
