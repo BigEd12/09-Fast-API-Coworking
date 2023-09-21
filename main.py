@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Form
 from datetime import datetime
 
 from database.models import Room, Client, Booking
@@ -83,17 +83,35 @@ def get_bookings_by_room(room_id: int, session: Session = Depends(get_db_session
 @app.get('/rooms')
 def get_all_rooms(session: Session = Depends(get_db_session)):
     try:
-        # Query all rooms from the Room table using the provided session
         rooms = session.query(Room).all()
-        # Convert the rooms to a list of dictionaries
         room_list = [{"room_id": room.room_id, "opening": room.opening, "closing": room.closing, "capacity": room.capacity} for room in rooms]
+        
         return {"rooms": room_list}
     except Exception as e:
         return {"error": str(e)}
     
-# @app.post('/rooms')
-# def add_new_room():
-#     return pass
+@app.post('/rooms')
+def add_new_room(
+    opening: str = Form(...),
+    closing: str = Form(...),
+    capacity: int = Form(...),
+    session: Session = Depends(get_db_session)
+    ):
+
+    try:
+        opening_time = datetime.strptime(opening, "%H:%M").time()
+        closing_time = datetime.strptime(closing, "%H:%M").time()
+        
+        new_room = Room(opening=opening_time, closing=closing_time, capacity=capacity)
+        session.add(new_room)
+        session.commit()
+        
+        added_room = session.query(Room).filter(Room.room_id == new_room.room_id).first()
+        
+        return {'message': 'new room added successfully', 'new room': added_room }
+    except Exception as e:
+        return {"error": str(e)}
+
 
 # @app.get('/rooms/usage')
 # def get_rooms_usage():
