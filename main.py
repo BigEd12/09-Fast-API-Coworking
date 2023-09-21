@@ -54,9 +54,25 @@ def get_all_bookings(session: Session = Depends(get_db_session)):
     except Exception as e:
         return {"error": str(e)}
     
-# @app.post('/bookings')
-# def make_new_booking():
-#     return pass
+@app.post('/bookings')
+def make_new_booking(
+    id_room: int = Form(...),
+    id_client: int = Form(...),
+    start: str = Form(...),
+    end: str = Form(...),
+    session: Session = Depends(get_db_session)
+    ):
+
+    try:
+        new_booking = Booking(id_room=id_room, id_client=id_client, start=start, end=end)
+        session.add(new_booking)
+        session.commit()
+        
+        added_booking = session.query(Booking).filter(Booking.id == new_booking.id).first()
+        
+        return {'message': 'new booking made successfully', 'new booking': added_booking }
+    except Exception as e:
+        return {"error": str(e)}
 
 @app.get('/bookings/client/{client_id}')
 def get_bookings_by_client(client_id: int, session: Session = Depends(get_db_session)):
