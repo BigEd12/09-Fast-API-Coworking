@@ -44,10 +44,17 @@ def load_initial_data():
 
 #----- BOOKING ENDPOINTS -----#
 
-# @app.get('/bookings')
-# def get_all_bookings():
-#     return pass
-
+@app.get('/bookings')
+def get_all_bookings(session: Session = Depends(get_db_session)):
+    try:
+        bookings = session.query(Booking).all()
+        # Convert the rooms to a list of dictionaries
+        booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
+        
+        return {"bookings": booking_list}
+    except Exception as e:
+        return {"error": str(e)}
+    
 # @app.post('/bookings')
 # def make_new_booking():
 #     return pass
