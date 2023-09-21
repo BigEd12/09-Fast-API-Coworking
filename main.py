@@ -151,9 +151,44 @@ def check_room_availability(room_id: int, timestamp: str, session: Session = Dep
     return {f'message': f'room {room_id} available at the requested time({query})'}
         
 
-# @app.get('/rooms/bookings/overlapping')
-# def get_overlapping_bookings():
-#     return pass
+@app.get('/rooms/bookings/overlapping')
+def get_overlapping_bookings(session: Session = Depends(get_db_session)):
+    bookings = session.query(Booking).all()
+    
+    def overlap(booking1, booking2):
+        if booking1.id_room != booking2.id_room:
+            return False
+        else:
+            date_format = "%Y-%m-%d %H:%M"
+            start1 = booking1.start
+            end1 = booking1.end
+            start2 = booking2.start
+            end2 = booking2.end
+            start1_date_time = datetime.strptime(start1.split('T')[0] + ' ' + start1.split('T')[1][:-1], date_format)
+            end1_date_time = datetime.strptime(end1.split('T')[0] + ' ' + end1.split('T')[1][:-1], date_format)
+            start2_date_time = datetime.strptime(start2.split('T')[0] + ' ' + start2.split('T')[1][:-1], date_format)
+            end2_date_time = datetime.strptime(end2.split('T')[0] + ' ' + end2.split('T')[1][:-1], date_format)
+            return start1_date_time < end2_date_time and start2_date_time < end1_date_time
+
+    overlapping_bookings = []
+
+    for i, booking1 in enumerate(bookings):
+        for j, booking2 in enumerate(bookings):
+            if i != j and overlap(booking1, booking2):
+                overlapping_bookings.append((booking1, booking2))
+    
+    if len(overlapping_bookings) == 0:
+        return {'message': 'No overlapping bookings'}
+    else:
+        overlapping_list = []
+        for booking_pair in overlapping_bookings:
+            overlapping_dict = {
+                'booking1': booking_pair[0],
+                'booking2': booking_pair[1]
+            }
+            overlapping_list.append(overlapping_dict)
+        
+        return {'message': 'Overlapping bookings found', 'overlapping_bookings': overlapping_list}
 
 # #----- CLIENT ENDPOINT -----#
 
