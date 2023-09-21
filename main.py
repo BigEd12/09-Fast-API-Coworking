@@ -133,9 +133,23 @@ def add_new_room(
 # def get_rooms_usage():
 #     return pass
 
-# @app.get('/rooms/availability/{room_id}/{timestamp}')
-# def check_room_availability():
-#     return pass
+@app.get('/rooms/availability/{room_id}/{timestamp}')
+def check_room_availability(room_id: int, timestamp: str, session: Session = Depends(get_db_session)):
+    bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
+    date_format = "%Y-%m-%d %H:%M"
+    query = datetime.strptime(timestamp.split('T')[0] + ' ' + timestamp.split('T')[1][:-1], date_format)
+    
+    for booking in bookings:
+        start = booking.start
+        end = booking.end
+        start_date_time = datetime.strptime(start.split('T')[0] + ' ' + start.split('T')[1][:-1], date_format)
+        end_date_time = datetime.strptime(end.split('T')[0] + ' ' + end.split('T')[1][:-1], date_format)
+        
+        if start_date_time <= query <= end_date_time:
+            return {f'message': f'room {room_id} busy at the requested time({query})'}
+        
+    return {f'message': f'room {room_id} available at the requested time({query})'}
+        
 
 # @app.get('/rooms/bookings/overlapping')
 # def get_overlapping_bookings():
