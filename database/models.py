@@ -7,8 +7,8 @@ class Room(Base):
     __tablename__ = 'rooms'
 
     room_id = Column(Integer, primary_key=True)
-    opening = Column('opening', Time)
-    closing = Column('closing', Time)
+    opening = Column('opening', String)
+    closing = Column('closing', String)
     capacity = Column('capacity', Integer)
 
 
