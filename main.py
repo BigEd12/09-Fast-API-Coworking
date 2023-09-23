@@ -68,10 +68,10 @@ def get_all_bookings(session: Session = Depends(get_db_session)):
     
 @app.post('/bookings')
 def make_new_booking(
-    id_room: int = Query(..., description='Room Id'),
-    id_client: int = Query(..., description='Client Id'),
-    start: str = Query(..., description='Booking start time (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
-    end: str = Query(..., description='Booking end time (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
+    id_room: int = Form(..., description='Room Id'),
+    id_client: int = Form(..., description='Client Id'),
+    start: str = Form(..., description='Booking start time (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
+    end: str = Form(..., description='Booking end time (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
     session: Session = Depends(get_db_session)
     ):
     """
@@ -142,13 +142,13 @@ def get_all_rooms(session: Session = Depends(get_db_session)):
     
 @app.post('/rooms')
 def add_new_room(
-    opening: str = Query(..., description='Opening time of new room (HH:MM)'),
-    closing: str = Query(..., description='Closing time of new room (HH:MM)'),
-    capacity: int = Query(..., description='Capacity of new room'),
+    opening: str = Form(..., description='Opening time of new room (HH:MM)'),
+    closing: str = Form(..., description='Closing time of new room (HH:MM)'),
+    capacity: int = Form(..., description='Capacity of new room'),
     session: Session = Depends(get_db_session)
     ):
     """
-    Add a new room with required query parameters
+    Add a new room with
     """
     try:        
         new_room = Room(opening=opening, closing=closing, capacity=capacity)
