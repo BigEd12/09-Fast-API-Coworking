@@ -1,10 +1,14 @@
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, Form
+from starlette.responses import RedirectResponse
 
 from database.models import Room, Client, Booking
 from database.db import Session
 
 from original_data.original_data import data
+
+from utils.datetime.datetime import convert_time
+from utils.overlap.overlap import check_overlap
 
 app = FastAPI()
 
@@ -14,6 +18,12 @@ def get_db_session():
         yield db_session
     finally:
         db_session.close()
+
+#----- INDEX / DOCS ENDPOINT -----#
+@app.get('/')
+def index():
+    return RedirectResponse(url='/docs')
+
 
 #----- INITIAL DATA ENDPOINT -----#
 
@@ -226,7 +236,7 @@ def get_rooms_usage(session: Session = Depends(get_db_session)):
         bookings = session.query(Booking).all()
         date_list = []
         for booking in bookings:
-            date_list.append(datetime.strptime(booking.start.split('T')[0] + ' ' + booking.start.split('T')[1][:-1], '%Y-%m-%d %H:%M'))
+            date_list.append(convert_time(booking.start))
         unique_dates = set(date.date() for date in date_list)
         return len(unique_dates)
     
@@ -238,8 +248,8 @@ def get_rooms_usage(session: Session = Depends(get_db_session)):
         total_room_usage = {}
         for booking in bookings:
             room_id = booking.id_room
-            start = datetime.strptime(booking.start.split('T')[0] + ' ' + booking.start.split('T')[1][:-1], "%Y-%m-%d %H:%M")
-            end = datetime.strptime(booking.end.split('T')[0] + ' ' + booking.end.split('T')[1][:-1], "%Y-%m-%d %H:%M")
+            start = datetime.strptime(convert_time(booking))
+            end = datetime.strptime(convert_time(booking.end))
             booking_time = end - start
 
             if room_id not in total_room_usage:
@@ -304,13 +314,13 @@ def check_room_availability(
     """
     bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
     date_format = "%Y-%m-%d %H:%M"
-    query = datetime.strptime(timestamp.split('T')[0] + ' ' + timestamp.split('T')[1][:-1], date_format)
+    query = datetime.strptime(convert_time(timestamp))
     
     for booking in bookings:
         start = booking.start
         end = booking.end
-        start_date_time = datetime.strptime(start.split('T')[0] + ' ' + start.split('T')[1][:-1], date_format)
-        end_date_time = datetime.strptime(end.split('T')[0] + ' ' + end.split('T')[1][:-1], date_format)
+        start_date_time = datetime.strptime(convert_time(start))
+        end_date_time = datetime.strptime(convert_time(end))
         
         if start_date_time <= query <= end_date_time:
             return {f'Room {room_id}': f'Busy at requested time({query})'}
@@ -327,42 +337,9 @@ def get_overlapping_bookings(session: Session = Depends(get_db_session)):
         list: A list of dictionaries with all overlapping bookings.
     """
     bookings = session.query(Booking).all()
+
+    return check_overlap(bookings)
     
-    def overlap(booking1, booking2):
-        if booking1.id_room != booking2.id_room:
-            return False
-        else:
-            date_format = "%Y-%m-%d %H:%M"
-            start1 = booking1.start
-            end1 = booking1.end
-            start2 = booking2.start
-            end2 = booking2.end
-            start1_date_time = datetime.strptime(start1.split('T')[0] + ' ' + start1.split('T')[1][:-1], date_format)
-            end1_date_time = datetime.strptime(end1.split('T')[0] + ' ' + end1.split('T')[1][:-1], date_format)
-            start2_date_time = datetime.strptime(start2.split('T')[0] + ' ' + start2.split('T')[1][:-1], date_format)
-            end2_date_time = datetime.strptime(end2.split('T')[0] + ' ' + end2.split('T')[1][:-1], date_format)
-            return start1_date_time < end2_date_time and start2_date_time < end1_date_time
-
-    overlapping_bookings = []
-
-    for i, booking1 in enumerate(bookings):
-        for j, booking2 in enumerate(bookings):
-            if i != j and overlap(booking1, booking2):
-                overlapping_bookings.append((booking1, booking2))
-    
-    if len(overlapping_bookings) == 0:
-        return {'message': 'No overlapping bookings'}
-    else:
-        overlapping_list = []
-        for booking_pair in overlapping_bookings:
-            overlapping_dict = {
-                'booking1': booking_pair[0],
-                'booking2': booking_pair[1]
-            }
-            overlapping_list.append(overlapping_dict)
-        
-        return {f'{len(overlapping_list)} Overlapping bookings found':  overlapping_list}
-
 # #----- CLIENT ENDPOINT -----#
 
 @app.get('/clients/bookings')
