@@ -1,7 +1,5 @@
-from fastapi import FastAPI, Depends, Form, Query
-from datetime import datetime
-from datetime import timedelta
-from pydantic import Field
+from datetime import datetime, timedelta
+from fastapi import FastAPI, Depends, Form
 
 from database.models import Room, Client, Booking
 from database.db import Session
