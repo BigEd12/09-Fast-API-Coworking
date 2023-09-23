@@ -9,6 +9,7 @@ from original_data.original_data import data
 
 from utils.datetime.datetime import convert_time
 from utils.overlap.overlap import check_overlap
+from utils.usage.usage import calculate_percentage_per_room
 
 app = FastAPI()
 
@@ -216,82 +217,7 @@ def get_rooms_usage(session: Session = Depends(get_db_session)):
     Returns:
         dict: A dictionary indicating what percentage of the available time have the rooms been used
     """
-    
-    def room_open_hours():
-        """
-        Calculates how long each room is open in a day
-        """
-        rooms = session.query(Room).all()
-        rooms_open_hours = {}
-        for room in rooms:
-            open_time = datetime.strptime(room.opening, "%H:%M")
-            close_time = datetime.strptime(room.closing, "%H:%M")
-            rooms_open_hours[room.room_id] = (close_time - open_time).total_seconds() / 3600
-        return rooms_open_hours
-    
-    def total_days_in_range():
-        """
-        Calculates the number of days in the range of bookings
-        """
-        bookings = session.query(Booking).all()
-        date_list = []
-        for booking in bookings:
-            date_list.append(convert_time(booking.start))
-        unique_dates = set(date.date() for date in date_list)
-        return len(unique_dates)
-    
-    def total_bookings_per_room():
-        """
-        Calculates total time each room was used
-        """
-        bookings = session.query(Booking).all()
-        total_room_usage = {}
-        for booking in bookings:
-            room_id = booking.id_room
-            start = datetime.strptime(convert_time(booking))
-            end = datetime.strptime(convert_time(booking.end))
-            booking_time = end - start
-
-            if room_id not in total_room_usage:
-                total_room_usage[room_id] = booking_time
-            else:
-                total_room_usage[room_id] += booking_time
-        return total_room_usage
-    
-    def total_open_hours_per_room():
-        """
-        Calculates total time each room is open
-        """
-        open_hours = {}
-        rooms_open_hours = room_open_hours()
-        num_unique_dates = total_days_in_range()
-        for key, value in rooms_open_hours.items():
-            open_hours[key] = timedelta(hours=value * num_unique_dates)
-        return open_hours
-    
-    def calculate_percentage_per_room():
-        """
-        Calculates time room was used against open as a percentage
-        """
-        bookings_per_room = total_bookings_per_room()
-        open_hours_per_room = total_open_hours_per_room()
-        percentage_dict = {}
-        
-        for room_id, timedelta1 in open_hours_per_room.items():
-            if room_id in bookings_per_room:
-                timedelta2 = bookings_per_room[room_id]
-                if timedelta1.total_seconds() == 0:
-                    percentage = 0.0
-                else:
-                    percentage = round((timedelta2.total_seconds() / timedelta1.total_seconds()) * 100, 0)
-            else:
-                percentage = 0.0
-            
-            percentage_dict[room_id] = f'{percentage}%'
-        
-        return percentage_dict
-
-    result = calculate_percentage_per_room()
+    result = calculate_percentage_per_room(session)
 
     return {'Usage percentage by room': result}
     
