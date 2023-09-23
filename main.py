@@ -22,7 +22,7 @@ def get_db_session():
 @app.post('/data/load')
 def load_initial_data(session: Session = Depends(get_db_session)):
     """
-    Populates database with initial data if database is empty
+    Populates database with initial load data if empty
     """
     try:
         if (
@@ -58,7 +58,10 @@ def load_initial_data(session: Session = Depends(get_db_session)):
 @app.get('/bookings')
 def get_all_bookings(session: Session = Depends(get_db_session)):
     """
-    Returns all bookings in database
+    Returns all bookings
+
+    Returns:
+        dict: A dictionary with all bookings
     """
     try:
         bookings = session.query(Booking).all()
@@ -75,7 +78,16 @@ def make_new_booking(
     session: Session = Depends(get_db_session)
     ):
     """
-    Make a new booking with required parameters
+    Makes a new booking
+
+    Args:
+        id_room (int): The room ID where the booking is for.
+        client_id (int): The ID of the client making the booking.
+        start (str): The start time of the booking (HH:MM).
+        end (str): The end time of the booking (HH:MM).
+
+    Returns:
+        dict: A dictionary with all the confirmed booking.
     """
 
     try:
@@ -93,35 +105,58 @@ def make_new_booking(
     except Exception as e:
         return {"error": str(e)}
 
-@app.get('/bookings/client')
-def get_bookings_by_client(
-    client_id: int = Query(..., description='Client Id'),
-    session: Session = Depends(get_db_session)
-    ):
+@app.get('/bookings/client/{client_id}')
+def get_bookings_by_client(client_id: int,
+                           session: Session = Depends(get_db_session)
+                           ):
     """
-    Get all bookings made by a queried client
+    Returns all bookings made by a queried client
+
+    Args:
+        client_id (int): The client ID to check bookings for.
+
+    Returns:
+        dict: A dictionary with all bookings made by the queried client, if bookings or the client exist
     """
     try:
-        bookings = session.query(Booking).filter(Booking.id_client == client_id).all()
-        booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
-    
-        return {f'Bookings by client {client_id}': booking_list}
+        if session.query(Client).filter(Client.client_id == client_id).first():
+            bookings = session.query(Booking).filter(Booking.id_client == client_id).all()
+            booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
+        
+            if booking_list:
+                return {f'Bookings by client {client_id}': booking_list}
+            else:
+                return {f'Bookings by client {client_id}': 'No bookings found'}
+        else:
+            return {'Error': f'Client {client_id} not found'}
     except Exception as e:
         return {'error': str(e)}
 
-@app.get('/bookings/room')
+@app.get('/bookings/room/{room_id}')
 def get_bookings_by_room(
-    room_id: int = Query(..., description='Room Id'),
+    room_id: int,
     session: Session = Depends(get_db_session)
     ):
     """
-    Get all bookings for a queried room
+    Returns all bookings for a queried room
+
+    Args:
+        room_id (int): The ID of the room to check bookings for.
+    
+    Returns:
+        dict: A dictionary indicating the bookings of a room if bookings or the room exist
     """
     try:
-        bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
-        booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
-    
-        return {f'Bookings for room {room_id}': booking_list}
+        if session.query(Room).filter(Room.room_id == room_id).first():
+            bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
+            booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
+            
+            if len(booking_list) != 0:
+                return {f'Bookings for room {room_id}': booking_list}
+            else:
+                return {f'Bookings for room {room_id}': 'No bookings found'}
+        else:
+            return {'Error': f'Room {room_id} not found'}
     except Exception as e:
         return {'error': str(e)}
 
@@ -130,7 +165,10 @@ def get_bookings_by_room(
 @app.get('/rooms')
 def get_all_rooms(session: Session = Depends(get_db_session)):
     """
-    Gets information on all rooms
+    Returns information on all rooms
+
+    Returns:
+        list: A list of dictionaries with information on each room
     """
     try:
         rooms = session.query(Room).all()
@@ -148,7 +186,7 @@ def add_new_room(
     session: Session = Depends(get_db_session)
     ):
     """
-    Add a new room with
+    Add a new room
     """
     try:        
         new_room = Room(opening=opening, closing=closing, capacity=capacity)
@@ -166,6 +204,9 @@ def add_new_room(
 def get_rooms_usage(session: Session = Depends(get_db_session)):
     """
     Returns the percentage each room has been used
+
+    Returns:
+        dict: A dictionary indicating what percentage of the available time have the rooms been used
     """
     
     def room_open_hours():
@@ -247,14 +288,21 @@ def get_rooms_usage(session: Session = Depends(get_db_session)):
     return {'Usage percentage by room': result}
     
 
-@app.get('/rooms/availability')
+@app.get('/rooms/availability/{room_id}/{timestamp}')
 def check_room_availability(
-    room_id: int = Query(..., description='Room Id'),
-    timestamp: str = Query(..., description='Time to check availability (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
+    room_id: int,
+    timestamp: str,
     session: Session = Depends(get_db_session)
     ):
     """
     Returns queried room availability at the queried timestamp
+
+    Args:
+        room_id (int): The ID of the room to check availability for.
+        timestamp (str): The timestamp to check availability at (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged).
+
+    Returns:
+        dict: A dictionary indicating whether the room is busy or available at the requested time.
     """
     bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
     date_format = "%Y-%m-%d %H:%M"
@@ -275,7 +323,10 @@ def check_room_availability(
 @app.get('/rooms/bookings/overlapping')
 def get_overlapping_bookings(session: Session = Depends(get_db_session)):
     """
-    Gets all overlapping bookings that exist
+    Returns all overlapping bookings.
+
+    Returns:
+        list: A list of dictionaries with all overlapping bookings.
     """
     bookings = session.query(Booking).all()
     
@@ -319,7 +370,10 @@ def get_overlapping_bookings(session: Session = Depends(get_db_session)):
 @app.get('/clients/bookings')
 def get_bookings_by_all_clients(session: Session = Depends(get_db_session)):
     """
-    Gets all bookings made by all clients
+    Returns all bookings made by all clients.
+
+    Returns:
+        dict: A dictionary with all bookings made by each client.
     """
     try:
         client_ids = []
