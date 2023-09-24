@@ -3,7 +3,7 @@ from typing import Optional
 import re
 
 from database.db import Session
-from database.models import Booking
+from database.models import Booking, Client, Room
 
 router = APIRouter()
 
@@ -22,11 +22,10 @@ async def get_all_bookings(session: Session = Depends(get_db_session)):
     Returns:
         dict: A dictionary with all bookings
     """
-    try:
-        bookings = session.query(Booking).all()
-        return {"All bookings": bookings}
-    except Exception as e:
-        return {"error": str(e)}
+    bookings = session.query(Booking).all()
+    if not bookings:
+        raise HTTPException(status_code=404, detail='No information found. Try using data/load root first.')
+    return {"All bookings": bookings}
     
 @router.post('/make')
 async def make_new_booking(
@@ -41,7 +40,7 @@ async def make_new_booking(
 
     Args:
         id_room (int): The room ID where the booking is for.
-        client_id (int): The ID of the client making the booking.
+        id_client (int): The ID of the client making the booking.
         start (str): The start time of the booking (HH:MM).
         end (str): The end time of the booking (HH:MM).
 
@@ -55,6 +54,13 @@ async def make_new_booking(
     if not re.match(pattern, end):
         raise HTTPException(status_code=400, detail='Incorrect date format for end time')
 
+    clients = session.query(Client).all()
+    if not session.query(Client).filter(Client.client_id == id_client).first():
+        raise HTTPException(status_code=404, detail=f'Client {id_client} not found.')
+    
+    rooms = session.query(Room).all()
+    if not session.query(Room).filter(Room.room_id == id_room).first():
+        raise HTTPException(status_code=404, detail=f'Room {id_room} not found.')
 
     new_booking = Booking(
         id_room=id_room,
