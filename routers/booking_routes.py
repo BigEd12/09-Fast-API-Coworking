@@ -24,7 +24,7 @@ async def get_all_bookings(session: Session = Depends(get_db_session)):
     """
     bookings = session.query(Booking).all()
     if not bookings:
-        raise HTTPException(status_code=404, detail='No information found. Try using data/load root first.')
+        raise HTTPException(status_code=404, detail='No booking information found. Try using data/load root first.')
     return {"All bookings": bookings}
     
 @router.post('/make')

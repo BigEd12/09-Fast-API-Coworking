@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+from fastapi import HTTPException
+
 from database.models import Room, Booking
 from database.db import Session
 
