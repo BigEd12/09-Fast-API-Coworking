@@ -1,7 +1,6 @@
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Form, Query
-from typing import Optional
+from fastapi import APIRouter, Depends, Form
 
 from database.models import Room, Booking
 from database.db import Session
