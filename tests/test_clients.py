@@ -7,17 +7,21 @@ from database.models import Client
 client = TestClient(app)
 
 class TestClientEndpoints:
-    def test_client_response_code(self):
-        response = client.get('/api/clients/bookings')
-        assert response.status_code == 200
-
-    def test_client_response_type(self):
-        response = client.get('/api/clients/bookings')
-        response_data = response.json()
-        assert isinstance(response_data, dict)
+    def test_clients_bookings(self):
+        with Session() as session:  
+            response = client.get('/api/clients/bookings')
+            assert response.status_code == 200
+            data = response.json()
+            assert isinstance(data, dict)
+            
+            clients = session.query(Client).all()
+            if clients:
+                assert 'No information found'
+            else:
+                assert 'Bookings per client' in data
+        
 
     def test_client_content(self):
-        # Assuming you have created some sample clients in your test database
         with Session() as session:
             response = client.get('/api/clients/bookings')
             response_data = response.json()

@@ -48,7 +48,7 @@ async def add_new_room(
     """
     Add a new room
     """
-    pattern = r'^\d{2}:\d{2}Z$'
+    pattern = r'^\d{2}:\d{2}$'
     if not re.match(pattern, opening):
         raise HTTPException(status_code=400, detail='Incorrect time format for opening time.')
     
@@ -112,7 +112,6 @@ async def check_room_availability(
     if not bookings:
         raise HTTPException(status_code=404, detail=f'Room {room_id} not found.')
     
-    date_format = "%Y-%m-%d %H:%M"
     query = convert_time(timestamp)
     
     for booking in bookings:
