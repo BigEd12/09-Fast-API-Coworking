@@ -17,6 +17,9 @@ def get_db_session():
 #----- INDEX / DOCS ENDPOINT -----#
 @app.get('/')
 def index():
+    """
+    Redirects to Docs
+    """
     return RedirectResponse(url='/docs')
 
 

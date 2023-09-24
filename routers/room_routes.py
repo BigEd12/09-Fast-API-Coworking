@@ -113,13 +113,13 @@ async def check_room_availability(
         raise HTTPException(status_code=404, detail=f'Room {room_id} not found.')
     
     date_format = "%Y-%m-%d %H:%M"
-    query = datetime.strptime(convert_time(timestamp))
+    query = convert_time(timestamp)
     
     for booking in bookings:
         start = booking.start
         end = booking.end
-        start_date_time = datetime.strptime(convert_time(start))
-        end_date_time = datetime.strptime(convert_time(end))
+        start_date_time = convert_time(start)
+        end_date_time = convert_time(end)
         
         if start_date_time <= query <= end_date_time:
             return {f'Room {room_id}': f'Busy at requested time({query})'}
