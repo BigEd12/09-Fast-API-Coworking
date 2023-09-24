@@ -110,7 +110,7 @@ def get_overlapping_bookings(session: Session = Depends(get_db_session)):
     Returns all overlapping bookings.
 
     Returns:
-        list: A list of dictionaries with all overlapping bookings.
+        list: A list of dictionaries with all overlapping bookings
     """
     bookings = session.query(Booking).all()
 

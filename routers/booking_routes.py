@@ -70,7 +70,7 @@ def get_bookings_by_filter(
     session: Session = Depends(get_db_session)
 ):
     """
-    Returns bookings with optional filters.
+    Returns bookings with optional filters
 
     Args:
         client_id (int, optional): The client ID to filter by.
