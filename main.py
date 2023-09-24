@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
-from fastapi import FastAPI, Depends, Form
+from fastapi import FastAPI, Depends, Form, Query
 from starlette.responses import RedirectResponse
+from typing import Optional
 
 from database.models import Room, Client, Booking
 from database.db import Session
@@ -78,7 +79,7 @@ def get_all_bookings(session: Session = Depends(get_db_session)):
     except Exception as e:
         return {"error": str(e)}
     
-@app.post('/bookings')
+@app.post('/bookings/make')
 def make_new_booking(
     id_room: int = Form(..., description='Room Id'),
     id_client: int = Form(..., description='Client Id'),
@@ -114,64 +115,44 @@ def make_new_booking(
     except Exception as e:
         return {"error": str(e)}
 
-@app.get('/bookings/client/{client_id}')
-def get_bookings_by_client(client_id: int,
-                           session: Session = Depends(get_db_session)
-                           ):
-    """
-    Returns all bookings made by a queried client
-
-    Args:
-        client_id (int): The client ID to check bookings for.
-
-    Returns:
-        dict: A dictionary with all bookings made by the queried client, if bookings or the client exist
-    """
-    try:
-        if session.query(Client).filter(Client.client_id == client_id).first():
-            bookings = session.query(Booking).filter(Booking.id_client == client_id).all()
-            booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
-        
-            if booking_list:
-                return {f'Bookings by client {client_id}': booking_list}
-            else:
-                return {f'Bookings by client {client_id}': 'No bookings found'}
-        else:
-            return {'Error': f'Client {client_id} not found'}
-    except Exception as e:
-        return {'error': str(e)}
-
-@app.get('/bookings/room/{room_id}')
-def get_bookings_by_room(
-    room_id: int,
+@app.get('/bookings/filter')
+def get_bookings_by_filter(
+    client_id: Optional[int] = Query(None, description="Filter by client ID"),
+    room_id: Optional[int] = Query(None, description="Filter by room ID"),
     session: Session = Depends(get_db_session)
-    ):
+):
     """
-    Returns all bookings for a queried room
+    Returns bookings with optional filters.
 
     Args:
-        room_id (int): The ID of the room to check bookings for.
-    
+        client_id (int, optional): The client ID to filter by.
+        room_id (int, optional): The room ID to filter by.
+
     Returns:
-        dict: A dictionary indicating the bookings of a room if bookings or the room exist
+        dict: A dictionary with all bookings filtered by client or room.
     """
     try:
-        if session.query(Room).filter(Room.room_id == room_id).first():
-            bookings = session.query(Booking).filter(Booking.id_room == room_id).all()
-            booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
-            
-            if len(booking_list) != 0:
-                return {f'Bookings for room {room_id}': booking_list}
-            else:
-                return {f'Bookings for room {room_id}': 'No bookings found'}
-        else:
-            return {'Error': f'Room {room_id} not found'}
+        query = session.query(Booking)
+        
+        if client_id is not None:
+            query = query.filter(Booking.id_client == client_id)
+        if room_id is not None:
+            query = query.filter(Booking.id_room == room_id)
+        
+        bookings = query.all()
+        
+        if not bookings:
+            return {"message": "No bookings found"}
+        
+        booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
+        return booking_list
+        
     except Exception as e:
-        return {'error': str(e)}
+        return {"error": str(e)}
 
 # #----- ROOM ENDPOINTS -----#
 
-@app.get('/rooms')
+@app.get('/rooms/all')
 def get_all_rooms(session: Session = Depends(get_db_session)):
     """
     Returns information on all rooms
@@ -187,7 +168,7 @@ def get_all_rooms(session: Session = Depends(get_db_session)):
     except Exception as e:
         return {"error": str(e)}
     
-@app.post('/rooms')
+@app.post('/rooms/add')
 def add_new_room(
     opening: str = Form(..., description='Opening time of new room (HH:MM)'),
     closing: str = Form(..., description='Closing time of new room (HH:MM)'),
@@ -254,7 +235,7 @@ def check_room_availability(
     return {f'Room {room_id}': f'Available at requested time({query})'}
         
 
-@app.get('/rooms/bookings/overlapping')
+@app.get('/rooms/overlapping')
 def get_overlapping_bookings(session: Session = Depends(get_db_session)):
     """
     Returns all overlapping bookings.
