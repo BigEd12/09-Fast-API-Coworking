@@ -1,14 +1,9 @@
-from datetime import datetime
 from fastapi import FastAPI, Depends, Form, Query
 from starlette.responses import RedirectResponse
-from typing import Optional
 
-from database.models import Room, Client, Booking
 from database.db import Session
 
 from routers import client_routes, booking_routes, room_routes, data_routes
-
-
 
 app = FastAPI()
 

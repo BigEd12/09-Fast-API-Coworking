@@ -13,7 +13,7 @@ def get_db_session():
         db_session.close()
 
 @router.get('/bookings')
-def get_bookings_by_all_clients(session: Session = Depends(get_db_session)):
+async def get_bookings_by_all_clients(session: Session = Depends(get_db_session)):
     """
     Returns all bookings made by all clients.
 
