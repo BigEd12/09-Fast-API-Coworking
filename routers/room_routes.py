@@ -16,7 +16,18 @@ router = APIRouter()
 @router.get('/all')
 async def get_all_rooms(session: Session = Depends(get_db_session)) -> Dict[str, List]:
     """
-    Gets information on all rooms.
+    Get information on all rooms.
+
+    This endpoint allows you to retrieve the information held on all rooms from the database.
+
+    Returns:
+        dict: A dictionary where the value is a list showing all rooms in the database.
+
+    Example:
+        To retrieve all rooms:
+        ```
+        /api/rooms/all
+        ```
     """
     rooms = session.query(Room).all()
     
@@ -35,7 +46,34 @@ async def add_new_room(
     session: Session = Depends(get_db_session)
     )-> Dict[str, Dict]:
     """
-    Add a new room.
+    Post a new room.
+
+    This endpoint allows you to add a new room with specified opening and closing times
+    and a designated capacity to the database.
+
+    Parameters:
+        - opening (str): The opening time of the new room in the format HH:MM.
+        - closing (str): The closing time of the new room in the format HH:MM.
+        - capacity (int): The capacity of the new room.
+        - session (Session): An active database session obtained from the 'get_db_session' dependency.
+
+    Returns:
+        dict: A dictionary containing information about the newly added room.
+
+    Raises:
+        HTTPException (status_code=400):
+            - If the 'opening' or 'closing' time is not in the correct format (HH:MM).
+            - If the 'capacity' is provided as '0', as rooms with 0 capacity cannot be added.
+
+    Example:
+        To add a new room with opening time at 08:00, closing time at 18:00, and a capacity of 30:
+        ```
+        POST api/rooms/add
+        Form Data:
+        - opening: 08:00
+        - closing: 18:00
+        - capacity: 30
+        ```
     """
     pattern = r'^\d{2}:\d{2}$'
     if not re.match(pattern, opening):
@@ -61,6 +99,16 @@ async def add_new_room(
 async def get_rooms_usage(session: Session = Depends(get_db_session)) -> Dict[str, Dict]:
     """
     Gets the percentage each room has been used in the time available.
+
+    This endpoint calculates and returns the percentage of time each room has been used
+    in the time available based on bookings in the database.
+
+    Returns:
+        dict: A dictionary containing the usage percentage for each room.
+
+    Raises:
+        HTTPException (status_code=404):
+            - If no booking information is found in the database. Try using the 'data/load' endpoint first.
     """
     bookings = session.query(Booking).all()
     
@@ -81,10 +129,26 @@ async def check_room_availability(
     """
     Gets queried room availability at the queried timestamp.
 
+    This endpoint allows you to check the availability of a specific room at a given timestamp.
+    
     Parameters:
-    - room_id (int): The ID of the room you want to check availability for.
-    - timestamp (str): The timestamp for which you want to check availability (in YYYY-MM-DDTHH:MMZ format).
+        - room_id (int): The ID of the room you want to check availability for.
+        - timestamp (str): The timestamp for which you want to check availability (in YYYY-MM-DDTHH:MMZ format - Where "T" and "Z" remain unchanged).
 
+    Returns:
+        dict: A dictionary indicating whether the room is available or busy at the requested timestamp.
+
+    Raises:
+        HTTPException (status_code=400):
+            - If the 'timestamp' is not in the correct format (YYYY-MM-DDTHH:MMZ).
+        HTTPException (status_code=404):
+            - If the specified 'room_id' is not found in the database.
+
+    Example:
+        To check the availability of Room 3 at timestamp 2023-09-25T15:30Z:
+        ```
+        GET /api/rooms/availability/3/2023-09-25T15:30Z
+        ```
     """
     pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$'
     if not re.match(pattern, timestamp):
@@ -112,6 +176,15 @@ async def check_room_availability(
 async def get_overlapping_bookings(session: Session = Depends(get_db_session)) -> Dict[str, List]:
     """
     Gets all overlapping bookings.
+
+    This endpoint retrieves all overlapping booking pairs from the database.
+
+    Returns:
+        dict: A dictionary containing information about overlapping bookings.
+
+    Raises:
+        HTTPException (status_code=404):
+            - If no booking information is found in the database. Try using the 'data/load' endpoint first.
     """
     bookings = session.query(Booking).all()
     

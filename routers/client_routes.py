@@ -7,12 +7,18 @@ router = APIRouter()
 
 
 @router.get('/bookings')
-async def get_bookings_by_all_clients(session: Session = Depends(get_db_session))-> dict:
+async def get_bookings_by_all_clients(session: Session = Depends(get_db_session)) -> dict:
     """
     Returns all bookings made by all clients.
 
+    This endpoint retrieves and returns all bookings made by each client in the database.
+
     Returns:
-        dict: A dictionary with all bookings made by each client.
+        dict: A dictionary containing the count of bookings made by each client.
+
+    Raises:
+        HTTPException (status_code=404):
+            - If no booking information is found in the database. Try using the 'data/load' endpoint first.
     """
     bookings = session.query(Booking)
     if not bookings:
