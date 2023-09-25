@@ -1,4 +1,4 @@
-#FASTApi - Coworking
+# FASTApi - Coworking
 
 ## Dependencies
 All necessary downloads in requirements.txt.
