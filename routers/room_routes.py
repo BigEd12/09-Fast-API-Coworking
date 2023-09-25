@@ -53,7 +53,7 @@ async def add_new_room(
     if not re.match(pattern, closing):
         raise HTTPException(status_code=400, detail='Incorrect time format for closing time.')
     
-    if capacity == '0':
+    if capacity == 0:
         raise HTTPException(status_code=400, detail='Room with 0 capacity cannot be added.')
     
     new_room = Room(opening=opening, closing=closing, capacity=capacity)
