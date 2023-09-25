@@ -1,4 +1,5 @@
 import re
+from typing import Dict, List
 
 from fastapi import APIRouter, HTTPException, Depends, Form 
 
@@ -13,12 +14,9 @@ router = APIRouter()
 
         
 @router.get('/all')
-async def get_all_rooms(session: Session = Depends(get_db_session)):
+async def get_all_rooms(session: Session = Depends(get_db_session)) -> Dict[str, List]:
     """
-    Returns information on all rooms
-
-    Returns:
-        list: A list of dictionaries with information on each room
+    Gets information on all rooms.
     """
     rooms = session.query(Room).all()
     
@@ -35,9 +33,9 @@ async def add_new_room(
     closing: str = Form(..., description='Closing time of new room (HH:MM)'),
     capacity: int = Form(..., description='Capacity of new room'),
     session: Session = Depends(get_db_session)
-    ):
+    )-> Dict[str, Dict]:
     """
-    Add a new room
+    Add a new room.
     """
     pattern = r'^\d{2}:\d{2}$'
     if not re.match(pattern, opening):
@@ -60,12 +58,9 @@ async def add_new_room(
 
 
 @router.get('/usage')
-async def get_rooms_usage(session: Session = Depends(get_db_session)):
+async def get_rooms_usage(session: Session = Depends(get_db_session)) -> Dict[str, Dict]:
     """
-    Returns the percentage each room has been used
-
-    Returns:
-        dict: A dictionary indicating what percentage of the available time have the rooms been used
+    Gets the percentage each room has been used in the time available.
     """
     bookings = session.query(Booking).all()
     
@@ -82,19 +77,15 @@ async def check_room_availability(
     room_id: int,
     timestamp: str,
     session: Session = Depends(get_db_session)
-    ):
+    ) -> Dict[str, str]:
     """
-    Returns queried room availability at the queried timestamp
+    Gets queried room availability at the queried timestamp.
 
-    Args:
-        room_id (int): The ID of the room to check availability for.
-        timestamp (str): The timestamp to check availability at (YYYY-MM-DDTHH:MMZ - Where 'T' and 'Z' remain unchanged).
+    Parameters:
+    - room_id (int): The ID of the room you want to check availability for.
+    - timestamp (str): The timestamp for which you want to check availability (in YYYY-MM-DDTHH:MMZ format).
 
-    Returns:
-        dict: A dictionary indicating whether the room is busy or available at the requested time.
     """
-
-    
     pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$'
     if not re.match(pattern, timestamp):
         raise HTTPException(status_code=400, detail='Incorrect time format.')
@@ -118,12 +109,9 @@ async def check_room_availability(
         
 
 @router.get('/overlap')
-async def get_overlapping_bookings(session: Session = Depends(get_db_session)):
+async def get_overlapping_bookings(session: Session = Depends(get_db_session)) -> Dict[str, List]:
     """
-    Returns all overlapping bookings.
-
-    Returns:
-        list: A list of dictionaries with all overlapping bookings
+    Gets all overlapping bookings.
     """
     bookings = session.query(Booking).all()
     

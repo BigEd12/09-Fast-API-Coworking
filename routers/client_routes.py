@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.get('/bookings')
-async def get_bookings_by_all_clients(session: Session = Depends(get_db_session)):
+async def get_bookings_by_all_clients(session: Session = Depends(get_db_session))-> dict:
     """
     Returns all bookings made by all clients.
 

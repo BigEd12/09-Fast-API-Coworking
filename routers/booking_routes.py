@@ -8,9 +8,9 @@ from database.models import Booking, Client, Room
 router = APIRouter()
 
 @router.get('/')
-async def get_all_bookings(session: Session = Depends(get_db_session)):
+async def get_all_bookings(session: Session = Depends(get_db_session))-> dict:
     """
-    Returns all bookings
+    Gets all available bookings.
 
     Returns:
         dict: A dictionary with all bookings
@@ -27,18 +27,12 @@ async def make_new_booking(
     start: str = Form(..., description='Booking start time (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
     end: str = Form(..., description='Booking end time (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged)'),
     session: Session = Depends(get_db_session)
-    ):
+    )-> dict:
     """
-    Makes a new booking
-
-    Args:
-        id_room (int): The room ID where the booking is for.
-        id_client (int): The ID of the client making the booking.
-        start (str): The start time of the booking (HH:MM).
-        end (str): The end time of the booking (HH:MM).
+    Makes a new booking.
 
     Returns:
-        dict: A dictionary with all the confirmed bookings.
+        dict: A dictionary with the confirmed booking.
     """
     pattern = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$'
     if not re.match(pattern, start):
@@ -70,13 +64,9 @@ async def get_bookings_by_filter(
     client_id: Optional[int] = Query(None, description='Filter by client ID'),
     room_id: Optional[int] = Query(None, description='Filter by room ID'),
     session: Session = Depends(get_db_session)
-):
+)-> dict:
     """
-    Returns bookings with optional filters
-
-    Args:
-        client_id (int, optional): The client ID to filter by.
-        room_id (int, optional): The room ID to filter by.
+    Gets bookings with optional filters
 
     Returns:
         dict: A dictionary with all bookings filtered by client or room.

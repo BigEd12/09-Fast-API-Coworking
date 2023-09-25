@@ -9,9 +9,9 @@ router = APIRouter()
 
         
 @router.post('/load')
-async def load_initial_data(session: Session = Depends(get_db_session)):
+async def load_initial_data(session: Session = Depends(get_db_session))-> dict:
     """
-    Populates database with initial load data if empty
+    Populates database with initial data, if empty.
     """
     if (
         session.query(Room).count() == 0 and
