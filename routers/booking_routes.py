@@ -2,17 +2,10 @@ from fastapi import APIRouter, HTTPException, Depends, Form, Query
 from typing import Optional
 import re
 
-from database.db import Session
+from database.db import Session, get_db_session
 from database.models import Booking, Client, Room
 
 router = APIRouter()
-
-def get_db_session():
-    db_session = Session()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
 
 @router.get('/')
 async def get_all_bookings(session: Session = Depends(get_db_session)):
@@ -74,8 +67,8 @@ async def make_new_booking(
 
 @router.get('/filter')
 async def get_bookings_by_filter(
-    client_id: Optional[int] = Query(None, description="Filter by client ID"),
-    room_id: Optional[int] = Query(None, description="Filter by room ID"),
+    client_id: Optional[int] = Query(None, description='Filter by client ID'),
+    room_id: Optional[int] = Query(None, description='Filter by room ID'),
     session: Session = Depends(get_db_session)
 ):
     """
@@ -98,7 +91,7 @@ async def get_bookings_by_filter(
     bookings = query.all()
     
     if not bookings:
-        raise HTTPException(status_code=404, detail="ID not found")
+        raise HTTPException(status_code=404, detail='ID not found')
     
     booking_list = [{'id_room': booking.id_room, 'id_client': booking.id_client, 'start': booking.start, 'end': booking.end} for booking in bookings]
     return booking_list

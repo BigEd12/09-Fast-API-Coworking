@@ -1,16 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 
-from database.db import Session
+from database.db import Session, get_db_session
 from database.models import Booking
 
 router = APIRouter()
 
-def get_db_session():
-    db_session = Session()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
 
 @router.get('/bookings')
 async def get_bookings_by_all_clients(session: Session = Depends(get_db_session)):

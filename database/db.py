@@ -10,3 +10,9 @@ sqlite_session = Session()
 
 Base.metadata.create_all(sqlite_engine)
 
+def get_db_session():
+    db_session = Session()
+    try:
+        yield db_session
+    finally:
+        db_session.close()

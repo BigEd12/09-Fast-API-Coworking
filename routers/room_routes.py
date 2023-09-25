@@ -3,7 +3,7 @@ import re
 from fastapi import APIRouter, HTTPException, Depends, Form 
 
 from database.models import Room, Booking
-from database.db import Session
+from database.db import Session, get_db_session
 
 from utils.datetime import convert_time
 from utils.overlap import check_overlap
@@ -11,13 +11,6 @@ from utils.usage import calculate_percentage_per_room
 
 router = APIRouter()
 
-def get_db_session():
-    db_session = Session()
-    try:
-        yield db_session
-    finally:
-        db_session.close()
-        
         
 @router.get('/all')
 async def get_all_rooms(session: Session = Depends(get_db_session)):
@@ -31,9 +24,9 @@ async def get_all_rooms(session: Session = Depends(get_db_session)):
     
     if not rooms:
         raise HTTPException(status_code=404, detail='No room information found. Try using data/load root first.')
-    room_list = [{"room_id": room.room_id, "opening": room.opening, "closing": room.closing, "capacity": room.capacity} for room in rooms]
+    room_list = [{'room_id': room.room_id, 'opening': room.opening, 'closing': room.closing, 'capacity': room.capacity} for room in rooms]
     
-    return {"Rooms": room_list}
+    return {'Rooms': room_list}
 
     
 @router.post('/add')
@@ -53,7 +46,7 @@ async def add_new_room(
     if not re.match(pattern, closing):
         raise HTTPException(status_code=400, detail='Incorrect time format for closing time.')
     
-    if capacity == 0:
+    if capacity == '0':
         raise HTTPException(status_code=400, detail='Room with 0 capacity cannot be added.')
     
     new_room = Room(opening=opening, closing=closing, capacity=capacity)
@@ -95,7 +88,7 @@ async def check_room_availability(
 
     Args:
         room_id (int): The ID of the room to check availability for.
-        timestamp (str): The timestamp to check availability at (YYYY-MM-DDTHH:MMZ - Where "T" and "Z" remain unchanged).
+        timestamp (str): The timestamp to check availability at (YYYY-MM-DDTHH:MMZ - Where 'T' and 'Z' remain unchanged).
 
     Returns:
         dict: A dictionary indicating whether the room is busy or available at the requested time.

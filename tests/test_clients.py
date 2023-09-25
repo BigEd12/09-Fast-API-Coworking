@@ -16,5 +16,3 @@ def tst_clients_bookings_response_type():
     data = response.json()
     assert isinstance(data, dict)
         
-
-

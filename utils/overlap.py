@@ -4,7 +4,6 @@ def overlap(booking1, booking2):
     if booking1.id_room != booking2.id_room:
         return False
     else:
-        date_format = "%Y-%m-%d %H:%M"
         start1 = booking1.start
         end1 = booking1.end
         start2 = booking2.start

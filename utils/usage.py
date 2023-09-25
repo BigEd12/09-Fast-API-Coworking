@@ -12,8 +12,8 @@ def room_open_hours(session: Session):
     rooms = session.query(Room).all()
     rooms_open_hours = {}
     for room in rooms:
-        open_time = datetime.strptime(room.opening, "%H:%M")
-        close_time = datetime.strptime(room.closing, "%H:%M")
+        open_time = datetime.strptime(room.opening, '%H:%M')
+        close_time = datetime.strptime(room.closing, '%H:%M')
         rooms_open_hours[room.room_id] = (close_time - open_time).total_seconds() / 3600
     return rooms_open_hours
 
