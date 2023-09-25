@@ -11,7 +11,14 @@ router = APIRouter()
 @router.post('/load')
 async def load_initial_data(session: Session = Depends(get_db_session))-> dict:
     """
-    Populates database with initial data, if empty.
+    Populates the database with initial data if it is empty.
+
+    This endpoint checks if the database is empty and, if so, populates it with initial data.
+    The data includes rooms, clients, and bookings. If the database already contains data,
+    it returns a message indicating that the database is already populated.
+
+    Returns:
+        dict: A message indicating the result of the data population process.
     """
     if (
         session.query(Room).count() == 0 and
