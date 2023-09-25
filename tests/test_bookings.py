@@ -4,7 +4,7 @@ from main import app
 client = TestClient(app)
 
 
-def test_get_all_bookings_response_code():
+def test_get_all_bookings_status_code():
     response = client.get('/api/bookings')
     assert response.status_code == 200
     
@@ -13,7 +13,7 @@ def test_get_all_bookings_response_type():
     response_data = response.json()
     assert isinstance(response_data, dict)
 
-def test_make_new_booking_error_response_code():
+def test_make_new_booking_error_status_code():
     data = {
         "id_room": 0,
         "id_client": 1,
@@ -24,7 +24,7 @@ def test_make_new_booking_error_response_code():
     assert response.status_code == 404
     
 
-def test_get_bookings_by_filter_response_code():
+def test_get_bookings_by_filter_status_code():
     params = {
         "client_id": 1,
         "room_id": 1,
@@ -32,7 +32,7 @@ def test_get_bookings_by_filter_response_code():
     response = client.get('/api/bookings/filter', params=params)
     assert response.status_code == 200
     
-def test_get_bookings_by_filter_error_response_code():
+def test_get_bookings_by_filter_error_status_code():
     params = {
         "client_id": 0,
         "room_id": 0,
