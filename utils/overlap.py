@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from utils.datetime.datetime import convert_time
+from utils.datetime import convert_time
 
 def overlap(booking1, booking2):
     if booking1.id_room != booking2.id_room:

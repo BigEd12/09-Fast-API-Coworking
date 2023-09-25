@@ -1,15 +1,13 @@
-from datetime import datetime
 import re
 
 from fastapi import APIRouter, HTTPException, Depends, Form 
 
 from database.models import Room, Booking
 from database.db import Session
-from database.models import Booking
 
-from utils.datetime.datetime import convert_time
-from utils.overlap.overlap import check_overlap
-from utils.usage.usage import calculate_percentage_per_room
+from utils.datetime import convert_time
+from utils.overlap import check_overlap
+from utils.usage import calculate_percentage_per_room
 
 router = APIRouter()
 

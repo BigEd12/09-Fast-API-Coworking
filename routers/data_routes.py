@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends
-from typing import Optional
 
 from database.db import Session
 from database.models import Booking, Client, Room

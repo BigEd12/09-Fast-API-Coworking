@@ -1,7 +1,5 @@
 from fastapi.testclient import TestClient
 from main import app
-from database.db import Session
-from database.models import Room, Booking
 
 client = TestClient(app)
 

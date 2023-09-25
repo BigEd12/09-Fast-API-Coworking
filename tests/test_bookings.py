@@ -46,33 +46,33 @@ from main import app
 
 client = TestClient(app)
 
-class TestBookingEndpoints:
-    def test_get_all_bookings(self):
-        response = client.get('/api/bookings')
-        assert response.status_code == 200
-        response_data = response.json()
-        assert isinstance(response_data, dict)
-        assert "All bookings" in response_data
 
-    def test_make_new_booking(self):
-        data = {
-            "id_room": 1,
-            "id_client": 1,
-            "start": "2023-09-24T12:00Z",
-            "end": "2023-09-24T14:00Z",
-        }
-        response = client.post('/api/bookings/make', data=data)
-        assert response.status_code == 200
-        response_data = response.json()
-        assert isinstance(response_data, dict)
-        assert "Booking confirmed" in response_data
+def test_get_all_bookings(self):
+    response = client.get('/api/bookings')
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, dict)
+    assert "All bookings" in response_data
 
-    def test_get_bookings_by_filter(self):
-        params = {
-            "client_id": 1,
-            "room_id": 1,
-        }
-        response = client.get('/api/bookings/filter', params=params)
-        assert response.status_code == 200
-        response_data = response.json()
-        assert isinstance(response_data, list)
+def test_make_new_booking(self):
+    data = {
+        "id_room": 1,
+        "id_client": 1,
+        "start": "2023-09-24T12:00Z",
+        "end": "2023-09-24T14:00Z",
+    }
+    response = client.post('/api/bookings/make', data=data)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, dict)
+    assert "Booking confirmed" in response_data
+
+def test_get_bookings_by_filter(self):
+    params = {
+        "client_id": 1,
+        "room_id": 1,
+    }
+    response = client.get('/api/bookings/filter', params=params)
+    assert response.status_code == 200
+    response_data = response.json()
+    assert isinstance(response_data, list)

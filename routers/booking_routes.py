@@ -54,11 +54,9 @@ async def make_new_booking(
     if not re.match(pattern, end):
         raise HTTPException(status_code=400, detail='Incorrect date format for end time')
 
-    clients = session.query(Client).all()
     if not session.query(Client).filter(Client.client_id == id_client).first():
         raise HTTPException(status_code=404, detail=f'Client {id_client} not found.')
     
-    rooms = session.query(Room).all()
     if not session.query(Room).filter(Room.room_id == id_room).first():
         raise HTTPException(status_code=404, detail=f'Room {id_room} not found.')
 

@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
 
-from fastapi import HTTPException
-
 from database.models import Room, Booking
 from database.db import Session
 
-from utils.datetime.datetime import convert_time
+from utils.datetime import convert_time
 
 def room_open_hours(session: Session):
     """
