@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 
 from database.db import Session
-from database.models import Booking
+from database.models import Booking, Client
 
 router = APIRouter()
 
