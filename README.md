@@ -21,6 +21,7 @@ To start the development server, use the command:
     uvicorn main:app
 
 ## Testing
-Bsaic testing has been implemented to confirm status codes and response types.
+Basic testing has been implemented to confirm status codes and response types.
 
-  
+## Endpoints
+View REPORT for information on Endpoints.
