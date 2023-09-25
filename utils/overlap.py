@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from utils.datetime import convert_time
 
 def overlap(booking1, booking2):
