@@ -1,5 +1,9 @@
 # FASTApi - Coworking
 
+This is a project designed to delve deeper into FASTApi and develop skills further.
+
+The concept is a coworking space, with rooms available to book. The result is an api that allows coworking users to book undertake a multitude of actions, which are all detailed in the report.
+
 ## Dependencies
 All necessary downloads in requirements.txt.
 
